@@ -25,53 +25,51 @@
 
 package internal
 
-import "strings"
+import "testing"
 
-const (
-	JsonPayload PayloadType = iota
-	XmlPayload
-	FormPayload
-	TextXml
-	UnsupportedPayload
-)
-
-const (
-	cTypeJson        = "application/json"
-	cTypeTextXml     = "text/xml"
-	cTypeAppXml      = "application/xml"
-	cTypeForm        = "application/x-www-form-urlencoded"
-	cTypeUnsupported = "unsupported"
-)
-
-type (
-	PayloadType int
-)
-
-func (p PayloadType) String() string {
-	types := []string{
-		cTypeJson,
-		cTypeAppXml,
-		cTypeForm,
-		cTypeTextXml,
-		cTypeUnsupported,
+func Test_categorizeContentType(t *testing.T) {
+	type args struct {
+		headerStr string
 	}
-
-	return types[p]
+	tests := []struct {
+		name string
+		args args
+		want PayloadType
+	}{
+		{
+			name: "json",
+			args: args{
+				"application/json",
+			},
+			want: JsonPayload,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := categorizeContentType(tt.args.headerStr); got != tt.want {
+				t.Errorf("categorizeContentType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
 
-func categorizeContentType(headerStr string) PayloadType {
-	j := JsonPayload.String()
-	x := XmlPayload.String()
-	xml2 := TextXml.String()
-	form := FormPayload.String()
-	if strings.Contains(headerStr, j) {
-		return JsonPayload
-	} else if strings.Contains(headerStr, xml2) || strings.Contains(headerStr, x) {
-		return XmlPayload
-	} else if strings.Contains(headerStr, form) {
-		return FormPayload
-	} else {
-		//todo: figure out proper way to return this
-		return UnsupportedPayload
+func TestPayloadType_String(t *testing.T) {
+	tests := []struct {
+		name string
+		p    PayloadType
+		want string
+	}{
+		{
+			name: "json",
+			p:    JsonPayload,
+			want: "application/json",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.p.String(); got != tt.want {
+				t.Errorf("String() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

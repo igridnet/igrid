@@ -1,3 +1,28 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2021 TECHCRAFT TECHNOLOGIES CO LTD.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package internal
 
 import "fmt"
@@ -73,32 +98,32 @@ func WithResponseError(err error) ResponseOption {
 	}
 }
 
-func ResponseFmt(response *Response) (string, error) {
+func ResponseFmt(response *Response) (string,error) {
 
-	var (
+	var(
 		errMsg string
 	)
-	if response == nil {
-		return "", fmt.Errorf("response is nil")
+	if response == nil{
+		return "",fmt.Errorf("response is nil")
 	}
 	hs := response.Headers
 	statusCode := response.StatusCode
 
-	if response.Error != nil {
+	if response.Error != nil{
 		errMsg = response.Error.Error()
 	}
-	if response.Error == nil {
+	if response.Error == nil{
 		errMsg = "nil"
 	}
 
 	contentType := response.Headers["Content-Type"]
 	payloadType := categorizeContentType(contentType)
-	buffer, err := MarshalPayload(payloadType, response.Payload)
-	if err != nil {
-		return "", err
+	buffer, err := MarshalPayload(payloadType,response.Payload)
+	if err != nil{
+		return "",err
 	}
 	payload := buffer.String()
 
-	fmtString := fmt.Sprintf("\nRESPONSE DUMP:\nstatus code: %d\nheaders: %v\nerror: %s\npayload: %s\n", statusCode, hs, errMsg, payload)
+	fmtString := fmt.Sprintf("\nRESPONSE DUMP:\nstatus code: %d\nheaders: %v\nerror: %s\npayload: %s\n",statusCode,hs,errMsg,payload)
 	return fmtString, nil
 }

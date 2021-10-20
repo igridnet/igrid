@@ -1,3 +1,28 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2021 TECHCRAFT TECHNOLOGIES CO LTD.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 package internal
 
 import (
@@ -6,7 +31,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"github.com/pesakit/pesakit/internal/io"
+	"github.com/igridnet/igrid/internal/io"
 	stdio "io"
 	"net/http"
 	"net/http/httputil"
@@ -17,10 +42,37 @@ var (
 	_ Receiver = (*receiver)(nil)
 )
 
-type receiver struct {
-	Logger    stdio.Writer
-	DebugMode bool
-}
+type (
+	receiver struct {
+		Logger    stdio.Writer
+		DebugMode bool
+	}
+
+	Receiver interface {
+		Receive(ctx context.Context, rn string, r *http.Request, v interface{}) (*Receipt, error)
+	}
+
+	BasicAuth struct {
+		Username string
+		Password string
+	}
+
+	Receipt struct {
+		Request *http.Request
+		BearerToken string
+		BasicAuth   BasicAuth
+		ApiKey      string
+		RemoteAddress string
+		ForwardedFor string
+	}
+
+	ReceiveParams struct {
+		DebugMode bool
+		Logger    stdio.Writer
+	}
+
+	ReceiveOption func(params *ReceiveParams)
+)
 
 func NewReceiver(writer stdio.Writer, debug bool) Receiver {
 	return &receiver{
@@ -31,6 +83,30 @@ func NewReceiver(writer stdio.Writer, debug bool) Receiver {
 
 func (rc *receiver) Receive(ctx context.Context, rn string, r *http.Request, v interface{}) (*Receipt, error) {
 	receipt := new(Receipt)
+
+
+	// capture bearer token
+	reqToken := r.Header.Get("Authorization")
+	splitToken := strings.Split(reqToken, "Bearer")
+	if len(splitToken) >= 2 {
+		reqToken = strings.TrimSpace(splitToken[1])
+		receipt.BearerToken = reqToken
+	}
+
+	// capture basic auth
+	username, password, ok := r.BasicAuth()
+	if ok{
+		ba := BasicAuth{
+			Username: username,
+			Password: password,
+		}
+		receipt.BasicAuth = ba
+	}
+
+	receipt.RemoteAddress = r.RemoteAddr
+	receipt.ForwardedFor = r.Header.Get("X-Forwarded-For")
+	receipt.ApiKey = r.Header.Get("X-Api-key")
+
 	rClone := r.Clone(ctx)
 	receipt.Request = rClone
 	contentType := r.Header.Get("Content-Type")
@@ -39,19 +115,19 @@ func (rc *receiver) Receive(ctx context.Context, rn string, r *http.Request, v i
 	if err != nil {
 		return nil, err
 	}
-	if v == nil {
-		return nil, fmt.Errorf("v can not be nil")
-	}
+
 	// restore request body
 	r.Body = stdio.NopCloser(bytes.NewBuffer(body))
 
 	defer func(debug bool) {
 		if debug {
-			r.Body = stdio.NopCloser(bytes.NewBuffer(body))
 			rc.logRequest(rn, r)
-			r.Body = stdio.NopCloser(bytes.NewBuffer(body))
 		}
 	}(rc.DebugMode)
+
+	if v == nil {
+		return receipt, nil
+	}
 
 	switch payloadType {
 	case JsonPayload:
@@ -72,22 +148,6 @@ func (rc *receiver) Receive(ctx context.Context, rn string, r *http.Request, v i
 
 	return receipt, err
 }
-
-type Receiver interface {
-	Receive(ctx context.Context, rn string, r *http.Request, v interface{}) (*Receipt, error)
-	//LogPayload(prefix string,response *Response)
-}
-
-type Receipt struct {
-	Request *http.Request
-}
-
-type ReceiveParams struct {
-	DebugMode bool
-	Logger    stdio.Writer
-}
-
-type ReceiveOption func(params *ReceiveParams)
 
 func ReceiveDebugMode(mode bool) ReceiveOption {
 	return func(params *ReceiveParams) {
@@ -200,10 +260,3 @@ func (rc *receiver) logRequest(name string, request *http.Request) {
 	}
 	return
 }
-
-//func (rc *receiver) R(prefix string,response *Response) {
-//	contentType := response.Headers["Content-Type"]
-//	payloadType := categorizeContentType(contentType)
-//	buffer, _ := MarshalPayload(payloadType,response.Payload)
-//	_, _ = rc.Logger.Write([]byte(fmt.Sprintf("%s response: %s\n\n", prefix, buffer.String())))
-//}
