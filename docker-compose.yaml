@@ -1,0 +1,36 @@
+services:
+  bp:
+    hostname: bp
+    container_name: bp
+    restart: always
+    build:
+      context: .
+      args:
+        - IGRID_SERVER_PORT=${IGRID_SERVER_PORT}
+    ports:
+      - "${IGRID_SERVER_PORT}:${IGRID_SERVER_PORT}"
+    depends_on:
+      - postgres
+    env_file: .env
+    networks:
+      - beanpay-net
+  postgres:
+    hostname: postgres
+    container_name: postgres
+    image: postgres
+    restart: on-failure
+    ports:
+      - "${IGRID_POSTGRES_PORT}:${IGRID_POSTGRES_PORT}"
+    env_file: .env
+    environment:
+      POSTGRES_PASSWORD: ${IGRID_POSTGRES_PASSWORD}
+      POSTGRES_USER: ${IGRID_POSTGRES_USER}
+      POSTGRES_DB: ${IGRID_POSTGRES_DB}
+    networks:
+      - beanpay-net
+    volumes:
+      - beanpay-db-volume:/var/lib/postgresql/data
+networks:
+  beanpay-net:
+volumes:
+  beanpay-db-volume:

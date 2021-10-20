@@ -31,6 +31,10 @@ const (
 	defPostgresPassword                  = "root"
 	defPostgresName                      = "beanpay"
 	defPostgresSSLMode                   = "disable"
+	envServerPort                        = "IGRID_SERVER_PORT"
+	defServerPort                        = "8080"
+	envDebugMode                         = "IGRID_DEBUG_MODE"
+	defDebugMode                         = true
 )
 
 func loadDatabaseConf() *postgres.Config {
@@ -56,6 +60,12 @@ func loadDatabaseConf() *postgres.Config {
 
 func main() {
 
+	var (
+	//	debugMode     = env.Bool(envDebugMode, defDebugMode)
+		serverPort    = env.String(envServerPort, defServerPort)
+	//	secret        = env.String(envJWTSigningSecret, defJWTSigningSecret)
+	)
+
 	err := postgres.Initialize(context.TODO(), loadDatabaseConf())
 	if err != nil {
 		log.Fatalf("could not initialize database %v\n", err)
@@ -78,7 +88,7 @@ func main() {
 	//fmt.Printf("debug mode is %t\n", debugMode)
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":9096"),
+		Addr:    fmt.Sprintf(":%s",serverPort),
 		Handler: handler,
 	}
 
