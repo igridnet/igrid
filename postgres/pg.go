@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
-	"github.com/igridnet/igrid/internal/io"
 	"github.com/igridnet/users/models"
+	"github.com/techcraftlabs/base/io"
 	"time"
 )
 

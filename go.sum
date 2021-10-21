@@ -39,8 +39,6 @@ github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
 github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
-github.com/igridnet/users v0.0.0-20211020135739-1439cc6d97f2 h1:pBSdShs0ePSDSsFTXwKFKZ9o3r3zkilq5brCoxNp51U=
-github.com/igridnet/users v0.0.0-20211020135739-1439cc6d97f2/go.mod h1:FgQ2I3Luzy8uEr2n/QWkgiaj8X7xWQBzG9kHB75OCVk=
 github.com/igridnet/users v0.0.0-20211020143930-db4390637efa h1:CiArxlVnrUq6gJP5Syt3Pcbg+D/V1sYBMBpWLBGPLZ4=
 github.com/igridnet/users v0.0.0-20211020143930-db4390637efa/go.mod h1:FgQ2I3Luzy8uEr2n/QWkgiaj8X7xWQBzG9kHB75OCVk=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
@@ -69,6 +67,8 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
+github.com/techcraftlabs/base v0.0.2 h1:vaHW69K4n4OBAzzmce73QgOiO2jDqEOQlTVsbJOXDWY=
+github.com/techcraftlabs/base v0.0.2/go.mod h1:rOmjUkGfCp2vqa9O57htXSjzMEKxnYEEsrS0Pr/g4p0=
 github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc h1:9lRDQMhESg+zvGYmW5DyG0UqvY96Bu5QYsTLvCHdrgo=
 github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc/go.mod h1:bciPuU6GHm1iF1pBvUfxfsH0Wmnc2VbpgvbI9ZWuIRs=
 github.com/vmihailenco/bufpool v0.1.11 h1:gOq2WmBrq0i2yW5QJ16ykccQ4wH9UyEsgLm6czKAd94=
