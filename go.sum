@@ -41,6 +41,8 @@ github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB7
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
 github.com/igridnet/users v0.0.0-20211020143930-db4390637efa h1:CiArxlVnrUq6gJP5Syt3Pcbg+D/V1sYBMBpWLBGPLZ4=
 github.com/igridnet/users v0.0.0-20211020143930-db4390637efa/go.mod h1:FgQ2I3Luzy8uEr2n/QWkgiaj8X7xWQBzG9kHB75OCVk=
+github.com/igridnet/users v0.0.0-20211021125149-69650ccbcc20 h1:4X+uuzHIoVYKxtzXHGUxueDO1r3AjSuqTlSswmeqYPI=
+github.com/igridnet/users v0.0.0-20211021125149-69650ccbcc20/go.mod h1:FgQ2I3Luzy8uEr2n/QWkgiaj8X7xWQBzG9kHB75OCVk=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=

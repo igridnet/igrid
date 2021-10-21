@@ -153,7 +153,7 @@ func (c *Client) addNode(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer,err.Error(),http.StatusInternalServerError)
 		return
 	}
-	err = c.Users.AddNode(ctx, *req)
+	addedNode, err := c.Users.AddNode(ctx, *req)
 	if err != nil {
 		http.Error(writer,err.Error(),http.StatusInternalServerError)
 		return
@@ -161,7 +161,7 @@ func (c *Client) addNode(writer http.ResponseWriter, request *http.Request) {
 	headersOption := base.WithResponseHeaders(map[string]string{
 		"Content-Type":"application/json",
 	})
-	response := base.NewResponse(200,*req,headersOption)
+	response := base.NewResponse(200,addedNode,headersOption)
 	c.rp.Reply(writer,response)
 }
 
@@ -174,7 +174,7 @@ func (c *Client) addRegions(writer http.ResponseWriter, request *http.Request) {
 		http.Error(writer,err.Error(),http.StatusInternalServerError)
 		return
 	}
-	err = c.Users.AddRegion(ctx, *req)
+	addedRegion,err := c.Users.AddRegion(ctx, *req)
 	if err != nil {
 		http.Error(writer,err.Error(),http.StatusInternalServerError)
 		return
@@ -182,6 +182,6 @@ func (c *Client) addRegions(writer http.ResponseWriter, request *http.Request) {
 	headersOption := base.WithResponseHeaders(map[string]string{
 		"Content-Type":"application/json",
 	})
-	response := base.NewResponse(200,*req,headersOption)
+	response := base.NewResponse(200,addedRegion,headersOption)
 	c.rp.Reply(writer,response)
 }
