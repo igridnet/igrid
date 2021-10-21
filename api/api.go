@@ -8,6 +8,7 @@ import (
 	"github.com/techcraftlabs/base"
 	"github.com/techcraftlabs/base/io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -53,8 +54,23 @@ func (c *Client) MakeHandler() http.Handler {
 }
 
 func (c *Client) registerAdmin(writer http.ResponseWriter, request *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
 	req := new(models.AdminRegReq)
-	admin, err := c.Users.Register(context.Background(),*req)
+
+	_, err := c.rv.Receive(ctx,"admin login",request,req)
+	if err != nil {
+		http.Error(writer, err.Error(), 500)
+		return
+	}
+
+	invalid := (strings.TrimSpace(req.Email) == "") || (strings.TrimSpace(req.Password) == "") || (strings.TrimSpace(req.Name) == "")
+
+	if invalid{
+		http.Error(writer, "bad request specify email, name and password", http.StatusBadRequest)
+		return
+	}
+	admin, err := c.Users.Register(ctx,*req)
 	if err != nil {
 		http.Error(writer, err.Error(), 500)
 		return
@@ -67,7 +83,6 @@ func (c *Client) registerAdmin(writer http.ResponseWriter, request *http.Request
 }
 
 func (c *Client) adminLogin(writer http.ResponseWriter, request *http.Request) {
-
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	receipt, err := c.rv.Receive(ctx, "login", request, &Empty{})

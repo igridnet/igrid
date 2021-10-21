@@ -9,6 +9,5 @@ vendor
 *.md
 *_test.go
 .github
-go.sum
 bin
 *.env
