@@ -1,19 +1,4 @@
 services:
-#  bp:
-#    hostname: bp
-#    container_name: bp
-#    restart: always
-#    build:
-#      context: .
-#      args:
-#        - IGRID_SERVER_PORT=${IGRID_SERVER_PORT}
-#    ports:
-#      - "${IGRID_SERVER_PORT}:${IGRID_SERVER_PORT}"
-#    depends_on:
-#      - postgres
-#    env_file: .env
-#    networks:
-#      - beanpay-net
   igridnet:
     hostname: igridnet
     container_name: igridnet

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gorilla/mux"
 	"github.com/igridnet/users/api"
+	"github.com/igridnet/users/models"
 	"github.com/techcraftlabs/base"
 	"github.com/techcraftlabs/base/io"
 	"net/http"
@@ -52,7 +53,17 @@ func (c *Client) MakeHandler() http.Handler {
 }
 
 func (c *Client) registerAdmin(writer http.ResponseWriter, request *http.Request) {
-
+	req := new(models.AdminRegReq)
+	admin, err := c.Users.Register(context.Background(),*req)
+	if err != nil {
+		http.Error(writer, err.Error(), 500)
+		return
+	}
+	headersOption := base.WithResponseHeaders(map[string]string{
+		"Content-Type":"application/json",
+	})
+	response := base.NewResponse(200,admin,headersOption)
+	c.rp.Reply(writer,response)
 }
 
 func (c *Client) adminLogin(writer http.ResponseWriter, request *http.Request) {
@@ -78,25 +89,99 @@ func (c *Client) adminLogin(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (c *Client) getNodes(writer http.ResponseWriter, request *http.Request) {
+	nodes, err := c.Users.ListNodes(context.Background())
+	if err != nil {
+		http.Error(writer,err.Error(),http.StatusInternalServerError)
+		return
+	}
 
+	headersOption := base.WithResponseHeaders(map[string]string{
+		"Content-Type":"application/json",
+	})
+	response := base.NewResponse(200,nodes,headersOption)
+	c.rp.Reply(writer,response)
 }
 
 func (c *Client) getNodeById(writer http.ResponseWriter, request *http.Request) {
-
+	id := mux.Vars(request)["id"]
+	node, err := c.Users.GetNode(context.Background(),id)
+	if err != nil {
+		http.Error(writer,err.Error(),http.StatusInternalServerError)
+		return
+	}
+	headersOption := base.WithResponseHeaders(map[string]string{
+		"Content-Type":"application/json",
+	})
+	response := base.NewResponse(200,node,headersOption)
+	c.rp.Reply(writer,response)
 }
 
 func (c *Client) getRegions(writer http.ResponseWriter, request *http.Request) {
+	regions, err := c.Users.ListRegions(context.Background())
+	if err != nil {
+		http.Error(writer,err.Error(),http.StatusInternalServerError)
+		return
+	}
 
+	headersOption := base.WithResponseHeaders(map[string]string{
+		"Content-Type":"application/json",
+	})
+	response := base.NewResponse(200,regions,headersOption)
+	c.rp.Reply(writer,response)
 }
 
 func (c *Client) getRegionById(writer http.ResponseWriter, request *http.Request) {
-
+	id := mux.Vars(request)["id"]
+	region, err := c.Users.GetRegion(context.Background(),id)
+	if err != nil {
+		http.Error(writer,err.Error(),http.StatusInternalServerError)
+		return
+	}
+	headersOption := base.WithResponseHeaders(map[string]string{
+		"Content-Type":"application/json",
+	})
+	response := base.NewResponse(200,region,headersOption)
+	c.rp.Reply(writer,response)
 }
 
 func (c *Client) addNode(writer http.ResponseWriter, request *http.Request) {
-	
+	ctx, cancel := context.WithTimeout(context.Background(),time.Minute)
+	defer cancel()
+	req := new(models.NodeRegReq)
+	_, err := c.rv.Receive(ctx, "add node",request,req)
+	if err != nil {
+		http.Error(writer,err.Error(),http.StatusInternalServerError)
+		return
+	}
+	err = c.Users.AddNode(ctx, *req)
+	if err != nil {
+		http.Error(writer,err.Error(),http.StatusInternalServerError)
+		return
+	}
+	headersOption := base.WithResponseHeaders(map[string]string{
+		"Content-Type":"application/json",
+	})
+	response := base.NewResponse(200,*req,headersOption)
+	c.rp.Reply(writer,response)
 }
 
 func (c *Client) addRegions(writer http.ResponseWriter, request *http.Request) {
-	
+	ctx, cancel := context.WithTimeout(context.Background(),time.Minute)
+	defer cancel()
+	req := new(models.RegionRegReq)
+	_, err := c.rv.Receive(ctx, "add node",request,req)
+	if err != nil {
+		http.Error(writer,err.Error(),http.StatusInternalServerError)
+		return
+	}
+	err = c.Users.AddRegion(ctx, *req)
+	if err != nil {
+		http.Error(writer,err.Error(),http.StatusInternalServerError)
+		return
+	}
+	headersOption := base.WithResponseHeaders(map[string]string{
+		"Content-Type":"application/json",
+	})
+	response := base.NewResponse(200,*req,headersOption)
+	c.rp.Reply(writer,response)
 }

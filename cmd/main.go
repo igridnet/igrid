@@ -45,6 +45,7 @@ func loadDatabaseConf() *postgres.Config {
 		password = env.String(envPostgresPassword, defPostgresPassword)
 		name     = env.String(envPostgresName, defPostgresName)
 		sslMode  = env.String(envPostgresSSLMode, defPostgresSSLMode)
+		//debugMoe = env.Bool(envDebugMode,defDebugMode)
 	)
 
 	return &postgres.Config{
