@@ -1,4 +1,19 @@
 services:
+  mosquitto:
+    container_name: mosquitto
+    hostname: mosquitto
+    image: library/eclipse-mosquitto:1.6
+    restart: unless-stopped
+    ports:
+      - 1884
+      - 8888
+    volumes:
+      - ./mosquitto/conf/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto-conf:/mosquitto/config
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-logs:/mosquitto/log
+    networks:
+      - igrid-net
   igridnet:
     hostname: igridnet
     container_name: igridnet
@@ -11,6 +26,7 @@ services:
       - "${IGRID_SERVER_PORT}:${IGRID_SERVER_PORT}"
     depends_on:
       - postgres
+      - mosquitto
     env_file: .env
     networks:
       - igrid-net
@@ -33,4 +49,7 @@ services:
 networks:
   igrid-net:
 volumes:
+  mosquitto-logs:
+  mosquitto-conf:
+  mosquitto-data:
   igrid-postgres-db-volume:
