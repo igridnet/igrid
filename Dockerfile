@@ -3,7 +3,6 @@ RUN apk add --no-cache git
 WORKDIR /igrid
 COPY . .
 RUN go env -w GO111MODULE=on
-RUN go clean -modcache
 RUN go mod tidy
 RUN go mod download
 RUN cd cmd && go build -o igrid
