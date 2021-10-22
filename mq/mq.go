@@ -1,11 +1,15 @@
 package mq
 
 import (
+	"context"
 	"fmt"
 	"github.com/igridnet/mproxy/logger"
 	"github.com/igridnet/mproxy/pkg/session"
 	"github.com/igridnet/users/api"
+	"github.com/techcraftlabs/base/io"
+	stdio "io"
 	"strings"
+	"time"
 )
 
 
@@ -15,6 +19,7 @@ var _ session.Handler = (*Handler)(nil)
 type Handler struct {
 	logger logger.Logger
 	users *api.Client
+	writer stdio.Writer
 }
 
 // New creates new Event entity
@@ -22,13 +27,30 @@ func New(logger logger.Logger,client *api.Client) *Handler {
 	return &Handler{
 		logger: logger,
 		users: client,
+		writer: io.Stderr,
+
 	}
 }
 
 // AuthConnect is called on device connection,
 // prior forwarding to the MQTT broker
 func (h *Handler) AuthConnect(c *session.Client) error {
-	h.logger.Info(fmt.Sprintf("AuthConnect() - clientID: %s, username: %s, password: %s, client_CN: %s", c.ID, c.Username, string(c.Password), c.Cert.Subject.CommonName))
+	ctx, cancel := context.WithTimeout(context.Background(),time.Minute)
+	defer cancel()
+	msg := fmt.Sprintf("AuthConnect() request- clientID: %s, username: %s, password: %s, client_CN: %s", c.ID, c.Username, string(c.Password), c.Cert.Subject.CommonName)
+	_,_ = h.writer.Write([]byte(msg))
+	node, err := h.users.GetNode(ctx,c.Username)
+	if err != nil {
+		msg := fmt.Sprintf("could not authenticate the node with id %s due to error: %v",c.Username,err)
+		_,_ = h.writer.Write([]byte(msg))
+		return err
+	}
+
+	if node.Key != string(c.Password){
+		msg := fmt.Sprintf("password mismatch, not allowed")
+		_,_ = h.writer.Write([]byte(msg))
+		return err
+	}
 	return nil
 }
 
