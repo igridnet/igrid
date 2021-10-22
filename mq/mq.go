@@ -57,14 +57,62 @@ func (h *Handler) AuthConnect(c *session.Client) error {
 // AuthPublish is called on device publish,
 // prior forwarding to the MQTT broker
 func (h *Handler) AuthPublish(c *session.Client, topic *string, payload *[]byte) error {
-	h.logger.Info(fmt.Sprintf("AuthPublish() - clientID: %s, topic: %s, payload: %s", c.ID, *topic, string(*payload)))
+	ctx, cancel := context.WithTimeout(context.Background(),time.Minute)
+	defer cancel()
+	msg := fmt.Sprintf("AuthPublish() request- clientID: %s, username: %s, password: %s, client_CN: %s", c.ID, c.Username, string(c.Password), c.Cert.Subject.CommonName)
+	_,_ = h.writer.Write([]byte(msg))
+	node, err := h.users.GetNode(ctx,c.Username)
+	if err != nil {
+		msg := fmt.Sprintf("could not authenticate the node with id %s due to error: %v",c.Username,err)
+		_,_ = h.writer.Write([]byte(msg))
+		return err
+	}
+
+	ok, err := Authorize(node,*topic,PublishOperation)
+	if err != nil {
+		msg := fmt.Sprintf("could not authenticate publish operation by the node with id %s due to error: %v",c.Username,err)
+		_,_ = h.writer.Write([]byte(msg))
+		return err
+	}
+
+	if !ok{
+		msg := fmt.Sprintf("could not authenticate publish operation by the node with id %s",c.Username)
+		_,_ = h.writer.Write([]byte(msg))
+		return err
+	}
+
 	return nil
 }
 
 // AuthSubscribe is called on device publish,
 // prior forwarding to the MQTT broker
 func (h *Handler) AuthSubscribe(c *session.Client, topics *[]string) error {
-	h.logger.Info(fmt.Sprintf("AuthSubscribe() - clientID: %s, topics: %s", c.ID, strings.Join(*topics, ",")))
+	ctx, cancel := context.WithTimeout(context.Background(),time.Minute)
+	defer cancel()
+	msg := fmt.Sprintf("AuthSubscribe() request- clientID: %s, username: %s, password: %s, client_CN: %s", c.ID, c.Username, string(c.Password), c.Cert.Subject.CommonName)
+	_,_ = h.writer.Write([]byte(msg))
+	node, err := h.users.GetNode(ctx,c.Username)
+	if err != nil {
+		msg := fmt.Sprintf("could not authenticate the node with id %s due to error: %v",c.Username,err)
+		_,_ = h.writer.Write([]byte(msg))
+		return err
+	}
+
+	tpcs := *topics
+
+	ok, err := Authorize(node,tpcs[0],SubscribeOperation)
+	if err != nil {
+		msg := fmt.Sprintf("could not authenticate subscribe operation by the node with id %s due to error: %v",c.Username,err)
+		_,_ = h.writer.Write([]byte(msg))
+		return err
+	}
+
+	if !ok{
+		msg := fmt.Sprintf("could not authenticate subscribe operation by the node with id %s",c.Username)
+		_,_ = h.writer.Write([]byte(msg))
+		return err
+	}
+
 	return nil
 }
 
