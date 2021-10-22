@@ -30,7 +30,7 @@ const (
 	defWSPort         = "8080"
 
 	defWSTargetScheme = "ws"
-	defWSTargetHost   = "localhost"
+	defWSTargetHost   = "mosquitto"
 	defWSTargetPort   = "8888"
 	defWSTargetPath   = "/mqtt"
 
@@ -45,8 +45,7 @@ const (
 	// MQTT
 	defMQTTHost       = "0.0.0.0"
 	defMQTTPort       = "1883"
-	defMQTTSPort      = "8883"
-	defMQTTTargetHost = "0.0.0.0"
+	defMQTTTargetHost = "mosquitto"
 	defMQTTTargetPort = "1884"
 
 	envMQTTHost       = "IGRID_MQTT_HOST"
@@ -241,7 +240,6 @@ func loadConfig() config {
 		// MQTT
 		mqttHost:       envRead(envMQTTHost, defMQTTHost),
 		mqttPort:       envRead(envMQTTPort, defMQTTPort),
-		mqttsPort:      envRead(envMQTTSPort, defMQTTSPort),
 		mqttTargetHost: envRead(envMQTTTargetHost, defMQTTTargetHost),
 		mqttTargetPort: envRead(envMQTTTargetPort, defMQTTTargetPort),
 
