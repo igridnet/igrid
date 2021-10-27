@@ -6,7 +6,6 @@ import (
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
 	"github.com/igridnet/users/models"
-	"github.com/techcraftlabs/base/io"
 	"time"
 )
 
@@ -42,7 +41,7 @@ func (c *Config) DSN() string {
 }
 
 func ConnectWithConfig(ctx context.Context, config *Config) (*pg.DB, error) {
-	_, _ = fmt.Fprintf(io.Stderr, "using configs: %s\n", config.DSN())
+	//_, _ = fmt.Fprintf(io.Stderr, "using configs: %s\n", config.DSN())
 	db := pg.Connect(&pg.Options{
 		Addr:            fmt.Sprintf("%s:%s", config.Host, config.Port),
 		User:            config.User,

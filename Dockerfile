@@ -13,5 +13,6 @@ WORKDIR /igrid/
 COPY --from=builder /igrid ./
 ARG IGRID_SERVER_PORT
 EXPOSE ${IGRID_SERVER_PORT}
+RUN echo $IGRID_SERVER_PORT
 ENTRYPOINT ["cmd/igrid"]
 CMD ["--help"]

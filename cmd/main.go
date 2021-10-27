@@ -20,14 +20,13 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 const (
 	// WS
-	defWSHost         = "0.0.0.0"
-	defWSPath         = "/mqtt"
-	defWSPort         = "8080"
+	defWSHost = "0.0.0.0"
+	defWSPath = "/mqtt"
+	defWSPort = "8080"
 
 	defWSTargetScheme = "ws"
 	defWSTargetHost   = "mosquitto"
@@ -54,28 +53,27 @@ const (
 	envMQTTTargetHost = "IGRID_MQTT_TARGET_HOST"
 	envMQTTTargetPort = "IGRID_MQTT_TARGET_PORT"
 
-	defLogLevel  = "debug"
-	envLogLevel  = "IGRID_LOG_LEVEL"
+	defLogLevel = "debug"
+	envLogLevel = "IGRID_LOG_LEVEL"
 )
 
-
 const (
-	envPostgresHost                      = "IGRID_POSTGRES_HOST"
-	envPostgresPort                      = "IGRID_POSTGRES_PORT"
-	envPostgresUser                      = "IGRID_POSTGRES_USER"
-	envPostgresPassword                  = "IGRID_POSTGRES_PASSWORD"
-	envPostgresName                      = "IGRID_POSTGRES_DB"
-	envPostgresSSLMode                   = "IGRID_POSTGRES_SSLMODE"
-	defPostgresHost                      = "localhost"
-	defPostgresPort                      = "5432"
-	defPostgresUser                      = "igridnet"
-	defPostgresPassword                  = "root"
-	defPostgresName                      = "beanpay"
-	defPostgresSSLMode                   = "disable"
-	envServerPort                        = "IGRID_SERVER_PORT"
-	defServerPort                        = "8080"
-	envDebugMode                         = "IGRID_DEBUG_MODE"
-	defDebugMode                         = true
+	envPostgresHost     = "IGRID_POSTGRES_HOST"
+	envPostgresPort     = "IGRID_POSTGRES_PORT"
+	envPostgresUser     = "IGRID_POSTGRES_USER"
+	envPostgresPassword = "IGRID_POSTGRES_PASSWORD"
+	envPostgresName     = "IGRID_POSTGRES_DB"
+	envPostgresSSLMode  = "IGRID_POSTGRES_SSLMODE"
+	defPostgresHost     = "localhost"
+	defPostgresPort     = "5432"
+	defPostgresUser     = "igridnet"
+	defPostgresPassword = "root"
+	defPostgresName     = "beanpay"
+	defPostgresSSLMode  = "disable"
+	envServerPort       = "IGRID_SERVER_PORT"
+	defServerPort       = "8080"
+	envDebugMode        = "IGRID_DEBUG_MODE"
+	defDebugMode        = true
 )
 
 func loadDatabaseConf() *postgres.Config {
@@ -99,12 +97,11 @@ func loadDatabaseConf() *postgres.Config {
 	}
 }
 
-
 func main() {
 
 	var (
-	//	debugMode     = envRead.Bool(envDebugMode, defDebugMode)
-		serverPort    = env.String(envServerPort, defServerPort)
+		//	debugMode     = envRead.Bool(envDebugMode, defDebugMode)
+		serverPort = env.String(envServerPort, defServerPort)
 	//	secret        = envRead.String(envJWTSigningSecret, defJWTSigningSecret)
 	)
 
@@ -120,52 +117,46 @@ func main() {
 	tknz := jwt.NewTokenizer("secret")
 	has := hasher.New()
 	f := factory.NewFactory()
-	us := uapi.NewClient(db,f,tknz,has)
+	us := uapi.NewClient(db, f, tknz, has)
 
 	client := api.NewClient(us)
 
 	handler := client.MakeHandler()
 
-	runMqttProxy(us)
+	cfg := loadConfig()
 
-	//debugMode := envRead.Bool(envDebugMode, defDebugMode)
-	//fmt.Printf("debug mode is %t\n", debugMode)
+	logger, err := mflog.New(os.Stdout, cfg.logLevel)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	h := mq.New(logger, us)
+	errs := make(chan error, 3)
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%s",serverPort),
+		Addr:    fmt.Sprintf(":%s", serverPort),
 		Handler: handler,
 	}
 
+	logger.Info(fmt.Sprintf("Starting WebSocket proxy on port %s ", cfg.wsPort))
+	go proxyWS(cfg, logger, h, errs)
+
+
+	logger.Info(fmt.Sprintf("Starting MQTT proxy on port %s ", cfg.mqttPort))
+	go proxyMQTT(cfg, logger, h, errs)
+
+	logger.Info(fmt.Sprintf("Starting registry on port %s ", serverPort))
+	go runServer(srv,errs)
+
+
 	go func() {
-		fmt.Printf("starting server on port %s\n",serverPort)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
-		}
+		quit := make(chan os.Signal, 2)
+		signal.Notify(quit, syscall.SIGINT)
+		errs <- fmt.Errorf("%s", <-quit)
 	}()
 
-	// Wait for interrupt signal to gracefully shutdown the server with
-	// a timeout of 5 seconds.
-	quit := make(chan os.Signal)
-	// kill (no param) default send syscanll.SIGTERM
-	// kill -2 is syscall.SIGINT
-	// kill -9 is syscall. SIGKILL but can"t be catch, so don't need add it
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+	<-errs
 	log.Println("Shutdown Server ...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server Shutdown:", err)
-	}
-	// catching ctx.Done(). timeout of 5 seconds.
-	select {
-	case <-ctx.Done():
-		log.Println("timeout of 5 seconds.")
-	}
-	log.Println("Server exiting")
-
-
 }
 
 type config struct {
@@ -183,38 +174,7 @@ type config struct {
 	mqttTargetHost string
 	mqttTargetPort string
 
-
 	logLevel string
-}
-
-func runMqttProxy(client *uapi.Client) {
-	cfg := loadConfig()
-
-	logger, err := mflog.New(os.Stdout, cfg.logLevel)
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-
-	h := mq.New(logger,client)
-
-	errs := make(chan error, 3)
-
-	logger.Info(fmt.Sprintf("Starting WebSocket proxy on port %s ", cfg.wsPort))
-	go proxyWS(cfg, logger, h, errs)
-
-	// MQTT
-	logger.Info(fmt.Sprintf("Starting MQTT proxy on port %s ", cfg.mqttPort))
-	go proxyMQTT(cfg, logger, h, errs)
-	//}
-
-	go func() {
-		c := make(chan os.Signal, 2)
-		signal.Notify(c, syscall.SIGINT)
-		errs <- fmt.Errorf("%s", <-c)
-	}()
-
-	err = <-errs
-	logger.Error(fmt.Sprintf("mProxy terminated: %s", err))
 }
 
 func envRead(key, fallback string) string {
@@ -243,10 +203,13 @@ func loadConfig() config {
 		mqttTargetHost: envRead(envMQTTTargetHost, defMQTTTargetHost),
 		mqttTargetPort: envRead(envMQTTTargetPort, defMQTTTargetPort),
 
-
 		// Log
 		logLevel: envRead(envLogLevel, defLogLevel),
 	}
+}
+
+func runServer(srv *http.Server,errs chan error){
+	errs <- srv.ListenAndServe()
 }
 
 func proxyWS(cfg config, logger mflog.Logger, handler session.Handler, errs chan error) {
@@ -264,4 +227,3 @@ func proxyMQTT(cfg config, logger mflog.Logger, handler session.Handler, errs ch
 
 	errs <- mp.Listen()
 }
-
