@@ -241,6 +241,8 @@ github.com/igridnet/mproxy v0.0.0-20211020122043-2f0b01fa124a h1:kczWNVrtBu7nrzI
 github.com/igridnet/mproxy v0.0.0-20211020122043-2f0b01fa124a/go.mod h1:N9Tf8PcG7mPSKy8VD9x5A5kdn1cAJz5XXQx5kGm8U0g=
 github.com/igridnet/users v0.0.1 h1:ftaZVew3px+R6ALv8Kc1Wms44n+IJZkVDEujxVRVvV4=
 github.com/igridnet/users v0.0.1/go.mod h1:FgQ2I3Luzy8uEr2n/QWkgiaj8X7xWQBzG9kHB75OCVk=
+github.com/igridnet/users v0.0.2 h1:9ihFHQe/+AXOAUcouTAJxh3eORBWGSpAB2a7hW1dAvA=
+github.com/igridnet/users v0.0.2/go.mod h1:FgQ2I3Luzy8uEr2n/QWkgiaj8X7xWQBzG9kHB75OCVk=
 github.com/influxdata/influxdb1-client v0.0.0-20200827194710-b269163b24ab/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
