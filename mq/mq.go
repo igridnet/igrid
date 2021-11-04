@@ -37,17 +37,23 @@ func New(logger logger.Logger,client *api.Client) *Handler {
 func (h *Handler) AuthConnect(c *session.Client) error {
 	ctx, cancel := context.WithTimeout(context.Background(),time.Minute)
 	defer cancel()
-	msg := fmt.Sprintf("AuthConnect() request- clientID: %s, username: %s, password: %s, client_CN: %s", c.ID, c.Username, string(c.Password), c.Cert.Subject.CommonName)
+	noCreds :=  c.Username == "" || string(c.Password) == ""
+	if noCreds{
+		msg := fmt.Sprintf("no username or password has been provided, the connection will be dropped")
+		_,_ = h.writer.Write([]byte(msg))
+		return fmt.Errorf("%s\n",msg)
+	}
+	msg := fmt.Sprintf("\nAuthConnect() request- clientID: %s, username: %s, password: %s, client_CN: %s\n", c.ID, c.Username, string(c.Password), c.Cert.Subject.CommonName)
 	_,_ = h.writer.Write([]byte(msg))
 	node, err := h.users.GetNode(ctx,c.Username)
 	if err != nil {
-		msg := fmt.Sprintf("could not authenticate the node with id %s due to error: %v",c.Username,err)
+		msg := fmt.Sprintf("could not authenticate the node with id %s due to error: %v\n",c.Username,err)
 		_,_ = h.writer.Write([]byte(msg))
 		return err
 	}
 
 	if node.Key != string(c.Password){
-		msg := fmt.Sprintf("password mismatch, not allowed")
+		msg := fmt.Sprintf("password mismatch, not allowed\n")
 		_,_ = h.writer.Write([]byte(msg))
 		return err
 	}
